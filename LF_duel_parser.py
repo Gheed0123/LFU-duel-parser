@@ -55,7 +55,7 @@ def duel_to_csv(duel_results,path):
     tz = datetime.now(timezone.utc).astimezone().tzinfo
     date = datetime.strptime(list(duel_results.keys())[-1][:-1],'%Y%m%d-%H:%M:%S.%f').replace(tzinfo=tz)
     date = datetime.fromtimestamp(date.timestamp(),timezone.utc)
-    reset_date = date-timedelta(minutes=30)
+    reset_date = date-timedelta(hours=2,minutes=30)
     wday = datetime.weekday(reset_date)
     
     names = {0:'Gathering',1:'Building',2:'Research',3:'Hero Recruit',4:'Troop Training',5:'Kill',6:'NaN'}
@@ -76,13 +76,15 @@ def duel_to_csv(duel_results,path):
                 df2 = df2.drop(event,axis=1)
                 
             #do append
-            df = df2.merge(df,how='outer',on=['Name','Abbr'])
+            df = df2.merge(df,how='outer',on=['Name','Abbr']).sort_values(by=event,ascending=False)
         except:
             print('failed to open/merge with existing file')
-
-    with pd.ExcelWriter(pathname) as writer:         
-        df.to_excel(writer,sheet_name = 'Duel_Results',index=False)
-        
+    try:
+        with pd.ExcelWriter(pathname) as writer:         
+            df.to_excel(writer,sheet_name = 'Duel_Results',index=False)
+    except:
+        print('Cannot write to '+pathname)
+        print('please close excel')
     return
  
 def main(path):    
